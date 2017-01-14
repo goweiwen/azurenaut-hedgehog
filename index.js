@@ -16,7 +16,7 @@ function getCurrentTabUrl(callback) {
     currentWindow: true
   };
 
-  chrome.tabs.query(queryInfo, function(tabs) {
+  chrome.tabs.query(queryInfo, function (tabs) {
     // chrome.tabs.query invokes the callback with a list of tabs that match the
     // query. When the popup is opened, there is certainly a window and at least
     // one tab, so we can safely assume that |tabs| is a non-empty array.
@@ -51,7 +51,7 @@ function getCurrentTabUrl(callback) {
 function analyseImage(imageUrl) {
   const BINGCOMPUTERVISIONKEY = 'd0c9f9d4189d4ee59a99cd10b39afb3a';
   // Build the url we'll be calling to get top news
-  var url = "https://api.projectoxford.ai/vision/v1.0/analyze?visualFeatures=Tags";
+  var url = "https://api.projectoxford.ai/vision/v1.0/describe";
   // Build options for the request
   var options = {
     method: 'POST', // thie API call is a post request
@@ -65,21 +65,34 @@ function analyseImage(imageUrl) {
   };
   return fetch(url, options)
     .then(response => (response.status >= 200 && response.status < 300)
-            ? Promise.resolve(response)
-            : Promise.reject(new Error(response.statusText)))
+      ? Promise.resolve(response)
+      : Promise.reject(new Error(response.statusText)))
     .then(response => response.json())
-    .then(json => json.tags.map(tag => ({name: tag.name, confidence: tag.confidence})))
-    // .then(result => result.forEach(tag => console.log(tag.name)))
+    .then(json => json.description.tags)
     .catch(error => console.error(error));
 }
 
 /**
- * Uses Bing Computer Vision to analyse a list of images.
+ * Filters images by tags returned by Bing Computer Vision API
  * 
- * @param {string[]} images - List of images to analyse
+ * @param {string} imageUrl
  */
-function analyseImages(images) {
-  // TODO
+function matchesTags(imageUrl) {
+  analyseImage(imageUrl)
+    .then(function(tags) {
+      if (tags == null) return;
+      console.log(tags);
+      chrome.storage.sync.get({
+        tags: ''
+      }, function(items) {
+        var needles = items.tags.split(',');
+console.log(needles);
+        for (needle of needles)
+          if (tags.indexOf(needle) !== -1)
+            downloadImage(imageUrl, needle);
+      })
+    })
+    .catch(error => console.error(error));
 }
 
 /**
@@ -93,7 +106,20 @@ function getAllImages() {
  * Download a specific image to OneDrive
  * 
  * @param {string} imageUrl - URL to image to download
+ * @param {string} tag - Tag to file image under
  */
-function downloadImage(imageUrl) {
+function downloadImage(imageUrl, tag) {
   // TODO
+  console.log(`Found image matching tag ${tag}: ${imageUrl}`);
 }
+
+
+function renderStatus(statusText) {
+  document.getElementById('status').textContent = statusText;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  getCurrentTabUrl(function (url) {
+    renderStatus(matchesTags(url));
+  });
+});

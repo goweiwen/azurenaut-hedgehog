@@ -4,6 +4,11 @@
   "name": "Hedgehog",
   "description": "Analyses recent Instagram posts and create a word cloud describing the user.",
   "version": "1.0",
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": true
+    // "open_in_tab": true
+  },
 
   "browser_action": {
     "default_icon": "icon.png",
@@ -11,6 +16,7 @@
   },
   "permissions": [
     "activeTab",
+    "storage",
     "https://api.projectoxford.ai/",
     "https://api.instagram.com/"
   ]
