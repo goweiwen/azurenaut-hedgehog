@@ -86,7 +86,6 @@ function matchesTags(imageUrl) {
         tags: ''
       }, function(items) {
         var needles = items.tags.split(',');
-console.log(needles);
         for (needle of needles)
           if (tags.indexOf(needle) !== -1)
             downloadImage(imageUrl, needle);
@@ -95,13 +94,7 @@ console.log(needles);
     .catch(error => console.error(error));
 }
 
-/**
- * Returns a list of image urls in the active tab.
- */
-function getAllImages() {
-  // TODO
-}
-
+blacklist = [];
 /**
  * Download a specific image to OneDrive
  * 
@@ -111,15 +104,37 @@ function getAllImages() {
 function downloadImage(imageUrl, tag) {
   // TODO
   console.log(`Found image matching tag ${tag}: ${imageUrl}`);
+  if (blacklist.indexOf(imageUrl) == -1) {
+    chrome.tabs.create({ url: imageUrl }); 
+    blacklist.push(imageUrl);
+  }
 }
 
-
-function renderStatus(statusText) {
-  document.getElementById('status').textContent = statusText;
+function partition(input, size) {
+  var output = [];
+  for (var i = 0; i < input.length; i += size)
+    output[output.length] = input.slice(i, i + size);
+  return output;
+}
+var unique = arr => arr.filter(function(elem, index, self) {
+    return index == self.indexOf(elem);
+})
+function DOMLoaded(images) {
+  // console.log(images);
+  var partitions = partition(unique(images), 20);
+  var imageNo = 0;
+  var imageTotal = images.length;
+  partitions[0].forEach(matchesTags);
+//  for (part of partitions) {
+//    var string = `Image ${imageNo}/${imageTotal}`;
+//    setTimeout(() => {
+//      console.log(string);
+//      part.forEach(matchesTags)
+//    }, 60000/20*imageNo);
+//    imageNo += 20;
+//  }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  getCurrentTabUrl(function (url) {
-    renderStatus(matchesTags(url));
-  });
+chrome.browserAction.onClicked.addListener(function (tab) {
+  chrome.tabs.sendMessage(tab.id, { text: 'report_back' }, DOMLoaded);
 });
