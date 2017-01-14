@@ -40,6 +40,8 @@ function getCurrentTabUrl(callback) {
 }
 
 /**
+ * Uses Bing Computer Vision to analyse an image.
+ * 
  * @param {string} imageUrl - Image for Bing Computer Vision query.
  * @param {function(string, string[])} callback - Called when Bing CV returns. 
  *   The callback gets the URL, and a list of tags describing the image.
@@ -72,8 +74,26 @@ function analyseImage(imageUrl) {
 }
 
 /**
+ * Uses Bing Computer Vision to analyse a list of images.
+ * 
  * @param {string[]} images - List of images to analyse
  */
 function analyseImages(images) {
+  // TODO
+}
+
+/**
+ * Returns a list of image urls in the active tab.
+ */
+function getAllImages() {
+  // TODO
+}
+
+/**
+ * Download a specific image to OneDrive
+ * 
+ * @param {string} imageUrl - URL to image to download
+ */
+function downloadImage(imageUrl) {
   // TODO
 }
